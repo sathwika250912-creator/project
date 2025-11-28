@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        :root {
+            --pastel-blue: #A7C7E7;
+            --pastel-green: #C1E1C1;
+            --pastel-pink: #FFD1DC;
+            --pastel-lavender: #E6E6FA;
+            --pastel-peach: #FFDAB9;
+        }
+        
+        .login-container {
+            max-width: 450px;
+            margin: 50px auto;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--pastel-blue), var(--pastel-lavender));
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-header h1 {
+            color: #4a6fa5;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--pastel-blue);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(167, 199, 231, 0.3);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, var(--pastel-blue), var(--pastel-lavender));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .user-type {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .user-type-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-type-option:hover {
+            border-color: var(--pastel-blue);
+            background-color: rgba(167, 199, 231, 0.1);
+        }
+        
+        .user-type-option input[type="radio"] {
+            display: none;
+        }
+        
+        .user-type-option input[type="radio"]:checked + label {
+            color: #4a6fa5;
+            font-weight: 500;
+        }
+        
+        .footer-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .footer-links a {
+            color: #4a6fa5;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Welcome Back!</h1>
+            <p>Please login to continue</p>
+        </div>
+        
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Enter your username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Login As</label>
+                <div class="user-type">
+                    <div class="user-type-option">
+                        <input type="radio" id="student" name="userType" value="student" checked>
+                        <label for="student">Student</label>
+                    </div>
+                    <div class="user-type-option">
+                        <input type="radio" id="staff" name="userType" value="staff">
+                        <label for="staff">Staff</label>
+                    </div>
+                    <div class="user-type-option">
+                        <input type="radio" id="admin" name="userType" value="admin">
+                        <label for="admin">Admin</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-login">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </button>
+        </form>
+        
+        <div class="footer-links">
+            <a href="#" id="forgotPassword">Forgot Password?</a> • 
+            <a href="#" id="createAccount">Create New Account</a>
+        </div>
+    </div>
+
+    <script>
+        // Basic form submission handling
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const userType = document.querySelector('input[name="userType"]:checked').value;
+            
+            // For demo purposes, just show an alert
+            alert(`Welcome ${username}! You are logging in as ${userType}.`);
+            
+            // In a real app, you would redirect to the appropriate dashboard
+            // window.location.href = `${userType}-dashboard.html`;
+        });
+    </script>
+</body>
+</html>
