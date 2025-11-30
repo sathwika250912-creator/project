@@ -186,9 +186,9 @@ export class UI {
             title: formData.get('title') || document.getElementById('ticketTitle')?.value,
             category: formData.get('category') || document.getElementById('ticketCategory')?.value,
             priority: formData.get('priority') || document.getElementById('ticketPriority')?.value,
-            description: formData.get('description') || document.getElementById('ticketDescription')?.value,
+            // description removed
             location: formData.get('location') || document.getElementById('ticketLocation')?.value,
-            status: 'open',
+            status: 'New',
             createdAt: new Date().toISOString(),
             createdBy: this.auth.getCurrentUser().id
         };

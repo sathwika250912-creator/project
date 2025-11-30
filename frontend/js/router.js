@@ -26,7 +26,6 @@ export class Router {
             staff: {
                 dashboard: () => this.getDashboardView(),
                 'assigned-tickets': () => this.getAssignedTicketsView(),
-                'my-works': () => this.getMyWorksView(),
                 notifications: () => this.getNotificationsView(),
                 profile: () => this.getProfileView()
             },
@@ -37,7 +36,7 @@ export class Router {
                 'manage-staff': () => this.getManageStaffView(),
                 notifications: () => this.getNotificationsView(),
                 profile: () => this.getProfileView()
-            }
+            },
         };
     }
 
@@ -80,6 +79,7 @@ export class Router {
     getDashboardView() {
         // Use dataService to compute stats and recent tickets
         const stats = this.dataService.getTicketStats();
+        const role = this.auth.getCurrentRole();
         const recent = (this.dataService.getAllTickets() || []).slice(0, 6);
 
         const recentRows = recent.map(t => `
@@ -94,6 +94,36 @@ export class Router {
             <tr><td colspan="5" class="text-center text-muted">No recent tickets</td></tr>
         `;
 
+        // Only include Quick Stats for admins
+        const quickStatsHtml = (role === 'admin') ? `
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Quick Stats</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Resolution Rate</span>
+                                    <span class="fw-600">${Math.round((stats.completed / Math.max(1, stats.total)) * 100)}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: ${Math.min(100, Math.round((stats.completed / Math.max(1, stats.total)) * 100))}%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Avg. Response Time</span>
+                                    <span class="fw-600">2.5 hrs</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" style="width: 60%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>` : '';
+
         return `
             <div class="row mb-4">
                 <div class="col-md-3">
@@ -103,7 +133,7 @@ export class Router {
                         </div>
                         <div class="stat-content">
                             <h6 class="text-muted">Total Tickets</h6>
-                            <h3>${stats.total}</h3>
+                            <h3 id="stat-total">${stats.total}</h3>
                         </div>
                     </div>
                 </div>
@@ -114,7 +144,7 @@ export class Router {
                         </div>
                         <div class="stat-content">
                             <h6 class="text-muted">Completed</h6>
-                            <h3>${stats.completed}</h3>
+                            <h3 id="stat-completed">${stats.completed}</h3>
                         </div>
                     </div>
                 </div>
@@ -125,7 +155,7 @@ export class Router {
                         </div>
                         <div class="stat-content">
                             <h6 class="text-muted">In Progress</h6>
-                            <h3>${stats.inProgress}</h3>
+                            <h3 id="stat-inprogress">${stats.inProgress}</h3>
                         </div>
                     </div>
                 </div>
@@ -136,10 +166,11 @@ export class Router {
                         </div>
                         <div class="stat-content">
                             <h6 class="text-muted">Pending</h6>
-                            <h3>${stats.pending}</h3>
+                            <h3 id="stat-pending" data-status="pending">${stats.pending}</h3>
                         </div>
                     </div>
                 </div>
+            
             </div>
 
             <div class="row">
@@ -168,33 +199,7 @@ export class Router {
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Quick Stats</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Resolution Rate</span>
-                                    <span class="fw-600">${Math.round((stats.completed / Math.max(1, stats.total)) * 100)}%</span>
-                                </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-success" style="width: ${Math.min(100, Math.round((stats.completed / Math.max(1, stats.total)) * 100))}%"></div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Avg. Response Time</span>
-                                    <span class="fw-600">2.5 hrs</span>
-                                </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-primary" style="width: 60%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                ${quickStatsHtml}
             </div>
         `;
     }
@@ -217,7 +222,17 @@ export class Router {
     getMyTicketsView() {
         // Render the tickets created by the current user
         const user = this.auth.getCurrentUser();
-        const tickets = this.dataService.getUserTickets(user?.id);
+        let tickets = this.dataService.getUserTickets(user?.id);
+        let appliedFilter = null;
+        if (this.filterStatus) {
+            appliedFilter = this.filterStatus;
+            if (this.filterStatus.toLowerCase() === 'pending') {
+                tickets = (tickets || []).filter(t => t.status === 'New' || t.status === 'Pending');
+            } else {
+                tickets = (tickets || []).filter(t => t.status === this.filterStatus);
+            }
+            this.filterStatus = null;
+        }
 
         const rows = (tickets || []).map(t => {
             const createdAt = new Date(t.createdAt).toLocaleDateString();
@@ -238,8 +253,9 @@ export class Router {
 
         return `
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">My Tickets</h5>
+                    ${appliedFilter ? `<div class="filter-indicator small"><span class="badge bg-info me-2">Filter: ${appliedFilter}</span><button id="clear-filter-btn" class="btn btn-sm btn-outline-secondary">Clear</button></div>` : ''}
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -264,10 +280,34 @@ export class Router {
     }
 
     getAssignedTicketsView() {
+        const user = this.auth.getCurrentUser();
+        let tickets = this.dataService.getUserTickets(user?.id, 'assigned');
+        let appliedFilter = null;
+        if (this.filterStatus) {
+            appliedFilter = this.filterStatus;
+            if (this.filterStatus.toLowerCase() === 'pending') {
+                tickets = (tickets || []).filter(t => t.status === 'New' || t.status === 'Pending');
+            } else {
+                tickets = (tickets || []).filter(t => t.status === this.filterStatus);
+            }
+            this.filterStatus = null;
+        }
+
+        const rowsHtml = (tickets || []).map(t => `
+            <tr>
+                <td>${t.id}</td>
+                <td>${t.title}</td>
+                <td><span class="badge badge-${(t.status || 'info').toLowerCase().replace(/ /g, '-')}">${t.status}</span></td>
+                <td>${t.assignedByName || '-'}</td>
+                <td>${t.dueDate ? new Date(t.dueDate).toLocaleDateString() : '-'}</td>
+            </tr>
+        `).join('') || '';
+
         return `
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Assigned Tickets</h5>
+                    ${appliedFilter ? `<div class="filter-indicator small"><span class="badge bg-info me-2">Filter: ${appliedFilter}</span><button id="clear-filter-btn" class="btn btn-sm btn-outline-secondary">Clear</button></div>` : ''}
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -282,13 +322,60 @@ export class Router {
                                 </tr>
                             </thead>
                             <tbody>
+                                ${ rowsHtml || `<tr><td colspan="5" class="text-center text-muted">No assigned tickets</td></tr>` }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getAllTicketsView() {
+        let tickets = this.dataService.getAllTickets();
+        let appliedFilter = null;
+        if (this.filterStatus) {
+            appliedFilter = this.filterStatus;
+            if (this.filterStatus.toLowerCase() === 'pending') {
+                tickets = (tickets || []).filter(t => t.status === 'New' || t.status === 'Pending');
+            } else {
+                tickets = (tickets || []).filter(t => t.status === this.filterStatus);
+            }
+            this.filterStatus = null;
+        }
+
+        const rows = (tickets || []).map(t => `
+            <tr>
+                <td>#${t.id}</td>
+                <td>${t.title}</td>
+                <td><span class="badge badge-${(t.status || 'info').toLowerCase().replace(/ /g, '-')}">${t.status}</span></td>
+                <td>${t.priority}</td>
+                <td>${t.raisedBy || 'N/A'}</td>
+                <td>${new Date(t.createdAt).toLocaleDateString()}</td>
+            </tr>
+        `).join('') || `<tr><td colspan="6" class="text-center text-muted">No tickets found</td></tr>`;
+
+        return `
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">All Tickets</h5>
+                    ${appliedFilter ? `<div class="filter-indicator small"><span class="badge bg-info me-2">Filter: ${appliedFilter}</span><button id="clear-filter-btn" class="btn btn-sm btn-outline-secondary">Clear</button></div>` : ''}
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <td>#TK001</td>
-                                    <td>Broken AC in Room 101</td>
-                                    <td><span class="badge badge-warning">In Progress</span></td>
-                                    <td>Admin User</td>
-                                    <td>Nov 30, 2024</td>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Raised By</th>
+                                    <th>Date Created</th>
                                 </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
                             </tbody>
                         </table>
                     </div>
@@ -459,5 +546,59 @@ export class Router {
 
     attachEventListeners() {
         // Attach event listeners for dynamic content
+        const current = this.currentRoute;
+        if (current === 'dashboard') {
+            const role = this.auth.getCurrentRole();
+
+            const statTotal = document.getElementById('stat-total');
+            if (statTotal) {
+                statTotal.style.cursor = 'pointer';
+                statTotal.addEventListener('click', () => {
+                    if (role === 'admin') this.navigateTo('all-tickets');
+                    else this.navigateTo(role === 'staff' ? 'assigned-tickets' : 'my-tickets');
+                });
+            }
+
+            const statCompleted = document.getElementById('stat-completed');
+            if (statCompleted) {
+                statCompleted.style.cursor = 'pointer';
+                statCompleted.addEventListener('click', () => {
+                    this.filterStatus = 'Completed';
+                    if (role === 'admin') this.navigateTo('all-tickets');
+                    else this.navigateTo(role === 'staff' ? 'assigned-tickets' : 'my-tickets');
+                });
+            }
+
+            const statInProgress = document.getElementById('stat-inprogress');
+            if (statInProgress) {
+                statInProgress.style.cursor = 'pointer';
+                statInProgress.addEventListener('click', () => {
+                    this.filterStatus = 'In Progress';
+                    if (role === 'admin') this.navigateTo('all-tickets');
+                    else this.navigateTo(role === 'staff' ? 'assigned-tickets' : 'my-tickets');
+                });
+            }
+
+            const statPending = document.getElementById('stat-pending');
+            if (statPending) {
+                statPending.style.cursor = 'pointer';
+                statPending.addEventListener('click', () => {
+                    this.filterStatus = statPending.getAttribute('data-status') || 'pending';
+                    if (role === 'admin') this.navigateTo('all-tickets');
+                    else this.navigateTo(role === 'staff' ? 'assigned-tickets' : 'my-tickets');
+                });
+            }
+        }
+        // Attach clear-filter button handlers for ticket views
+        if (['my-tickets', 'assigned-tickets', 'all-tickets'].includes(current)) {
+            const clearBtn = document.getElementById('clear-filter-btn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', () => {
+                    this.filterStatus = null;
+                    // navigate to the same view to reload without filter
+                    this.navigateTo(this.currentRoute);
+                });
+            }
+        }
     }
 }

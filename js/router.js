@@ -481,11 +481,7 @@ export class Router {
                                 </div>
                             </div>
                             
-                            <div class="mb-3">
-                                <label for="ticketDescription" class="form-label">Description</label>
-                                <textarea class="form-control" id="ticketDescription" rows="5" required></textarea>
-                                <div class="form-text">Please provide as much detail as possible about the issue.</div>
-                            </div>
+                            <!-- Description removed per request (not necessary) -->
                             
                             <div class="mb-3">
                                 <label for="ticketAttachment" class="form-label">Attachments (Optional)</label>
@@ -938,7 +934,7 @@ export class Router {
             title: document.getElementById('ticketTitle').value,
             category: document.getElementById('ticketCategory').value,
             priority: document.getElementById('ticketPriority').value,
-            description: document.getElementById('ticketDescription').value,
+            // description removed
             location: document.getElementById('ticketLocation').value,
             status: 'open',
             createdAt: new Date().toISOString(),

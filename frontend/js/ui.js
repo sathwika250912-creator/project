@@ -8,41 +8,65 @@ export class UI {
     initialize() {
         this.setupEventListeners();
         this.updateProfileModal();
+        this.renderNotifications();
     }
 
     setupEventListeners() {
-        // Notification bell
+        // Notification bell -> toggle notifications dropdown
         const notificationBell = document.getElementById('notification-bell');
         if (notificationBell) {
             notificationBell.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const dropdown = document.getElementById('notification-dropdown');
                 if (dropdown) {
-                    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
                 }
             });
         }
+        const notificationDropdownEl = document.getElementById('notification-dropdown');
+        if (notificationDropdownEl) {
+            notificationDropdownEl.addEventListener('click', (e) => e.stopPropagation());
+        }
 
-        // Profile dropdown
+        // Profile button -> toggle profile dropdown
         const profileBtn = document.getElementById('profile-dropdown-btn');
         if (profileBtn) {
             profileBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const dropdown = document.getElementById('profile-dropdown');
                 if (dropdown) {
-                    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
                 }
             });
         }
+        const profileDropdownEl = document.getElementById('profile-dropdown');
+        if (profileDropdownEl) {
+            profileDropdownEl.addEventListener('click', (e) => e.stopPropagation());
+        }
 
-        // Edit profile link
-        const editProfileLinks = document.querySelectorAll('a[href="#profile"]');
-        editProfileLinks.forEach(link => {
+        // Edit profile and profile links -> navigate to profile page
+        const profileLinks = document.querySelectorAll('a[href="#profile"]');
+        profileLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                this.openEditProfileModal();
+                if (this.router) this.router.navigateTo('profile');
             });
         });
+
+        // Topbar logout link in the profile dropdown
+        const topbarLogout = document.getElementById('topbar-logout-link');
+        if (topbarLogout) {
+            topbarLogout.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (window.app && window.app.auth) {
+                    if (confirm('Are you sure you want to logout?')) {
+                        window.app.auth.logout();
+                        if (this.router) this.router.navigateTo('dashboard');
+                        this.showSuccessToast('Logged out successfully');
+                    }
+                }
+            });
+        }
 
         // Click outside to close dropdowns
         document.addEventListener('click', () => {
@@ -51,6 +75,56 @@ export class UI {
             if (notificationDropdown) notificationDropdown.style.display = 'none';
             if (profileDropdown) profileDropdown.style.display = 'none';
         });
+
+        // Mark all notifications as read (dropdown control)
+        const markAllBtn = document.getElementById('mark-all-read');
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Clear demo notifications and update UI
+                const notifs = [];
+                localStorage.setItem('notifications', JSON.stringify(notifs));
+                const list = document.getElementById('notification-list');
+                if (list) list.innerHTML = '<p class="text-center text-muted py-3">No notifications</p>';
+                const count = document.getElementById('notification-count');
+                if (count) count.textContent = '0';
+                this.renderNotifications();
+            });
+        }
+
+        // View All notifications -> navigate to page
+        const viewAll = document.getElementById('view-all-notifications');
+        if (viewAll) {
+            viewAll.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (this.router) this.router.navigateTo('notifications');
+                const dropdown = document.getElementById('notification-dropdown');
+                if (dropdown) dropdown.style.display = 'none';
+            });
+        }
+    }
+
+    renderNotifications() {
+        const listEl = document.getElementById('notification-list');
+        const countEl = document.getElementById('notification-count');
+        const raw = localStorage.getItem('notifications');
+        const items = raw ? JSON.parse(raw) : [];
+        if (!listEl) return;
+        if (!items || items.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-muted py-3">No notifications</p>';
+            if (countEl) countEl.textContent = '0';
+            return;
+        }
+        listEl.innerHTML = items.map(n => `
+            <div class="notification-item" data-id="${n.id}">
+                <div class="notification-icon bg-light"> <i class="fas fa-bell"></i></div>
+                <div class="notification-content">
+                    <h6 class="mb-0">${n.title}</h6>
+                    <small class="text-muted">${n.message}</small>
+                </div>
+            </div>
+        `).join('');
+        if (countEl) countEl.textContent = String(items.length);
     }
 
     updateProfileModal() {

@@ -145,9 +145,7 @@ async function handleRaiseTicket(auth, dataService) {
     const category = document.getElementById('ticketCategory').value;
     const priority = document.getElementById('ticketPriority').value;
     const location = document.getElementById('ticketLocation').value.trim();
-    const description = document.getElementById('ticketDescription').value.trim();
-
-    if (!title || !category || !location || !description) {
+    if (!title || !category || !location) {
         showErrorToast('Please fill all fields');
         return;
     }
@@ -155,8 +153,8 @@ async function handleRaiseTicket(auth, dataService) {
     try {
         const ticket = {
             id: generateId(),
-            title, category, priority, location, description,
-            status: 'Open',
+            title, category, priority, location,
+            status: 'New',
             createdBy: auth.getCurrentUser().id,
             createdAt: new Date().toISOString()
         };
