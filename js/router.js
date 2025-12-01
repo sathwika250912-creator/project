@@ -387,7 +387,7 @@ export class Router {
                                         <i class="far fa-eye me-2"></i>View Details
                                     </a>
                                 </li>
-                                ${ticket.status === 'open' && isAdmin ? `
+                                ${ticket.status === 'Not Assigned' && isAdmin ? `
                                     <li>
                                         <a class="dropdown-item assign-ticket" href="#" data-ticket-id="${ticket.id}">
                                             <i class="fas fa-user-tag me-2"></i>Assign
@@ -420,10 +420,10 @@ export class Router {
 
     getStatusClass(status) {
         switch(status.toLowerCase()) {
-            case 'open': return 'badge-status-open';
+            case 'Not Assigned': return 'badge-status-open';
             case 'in-progress': return 'badge-status-in-progress';
             case 'completed': return 'badge-status-completed';
-            case 'critical': return 'badge-status-critical';
+            case 'Emergency': return 'badge-status-Emergency';
             default: return 'badge-secondary';
         }
     }
@@ -472,7 +472,7 @@ export class Router {
                                         <option value="low">Low</option>
                                         <option value="medium" selected>Medium</option>
                                         <option value="high">High</option>
-                                        <option value="critical">Critical</option>
+                                        <option value="Emergency">Emergency</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -940,7 +940,7 @@ export class Router {
             priority: document.getElementById('ticketPriority').value,
             description: document.getElementById('ticketDescription').value,
             location: document.getElementById('ticketLocation').value,
-            status: 'open',
+            status: 'Not Assigned',
             createdAt: new Date().toISOString(),
             createdBy: this.auth.getCurrentUser().id
         };

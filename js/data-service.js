@@ -78,7 +78,7 @@ export class DataService {
             const tickets = JSON.parse(localStorage.getItem('tickets') || '[]');
             const newTicket = {
                 id: `T${Date.now()}`,
-                status: 'open',
+                status: 'Not Assigned',
                 createdAt: new Date().toISOString(),
                 createdBy: this.auth.getCurrentUser().id,
                 ...ticketData
@@ -253,7 +253,7 @@ export class DataService {
             
             const stats = {
                 totalTickets: tickets.length,
-                openTickets: tickets.filter(t => t.status === 'open').length,
+                openTickets: tickets.filter(t => t.status === 'Not Assigned').length,
                 inProgressTickets: tickets.filter(t => t.status === 'in-progress').length,
                 completedTickets: tickets.filter(t => t.status === 'completed').length,
                 activeStaff: users.filter(u => u.role === 'staff' && u.status === 'active').length,
@@ -327,7 +327,7 @@ export class DataService {
     generateSampleTickets() {
         const categories = ['Electrical', 'Plumbing', 'HVAC', 'Carpentry', 'Cleaning', 'Other'];
         const priorities = ['low', 'medium', 'high', 'critical'];
-        const statuses = ['open', 'in-progress', 'completed'];
+        const statuses = ['Not Assigned', 'in-progress', 'completed'];
         const locations = ['Main Building', 'Science Wing', 'Library', 'Dormitory A', 'Dormitory B', 'Cafeteria'];
         const userIds = ['U1001', 'U1002', 'U1003', 'E2001', 'E2002', 'A3001'];
         
@@ -353,7 +353,7 @@ export class DataService {
                 status,
                 location: locations[Math.floor(Math.random() * locations.length)],
                 createdBy: userIds[Math.floor(Math.random() * userIds.length)],
-                assignedTo: status !== 'open' ? 'E200' + (Math.floor(Math.random() * 2) + 1) : null,
+                assignedTo: status !== 'Not Assigned' ? 'E200' + (Math.floor(Math.random() * 2) + 1) : null,
                 createdAt: createdAt.toISOString(),
                 updatedAt: updatedAt.toISOString(),
                 completedAt: completedAt ? completedAt.toISOString() : null

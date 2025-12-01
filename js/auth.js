@@ -252,3 +252,4 @@ export class Auth {
         }
         return null;
     }
+}

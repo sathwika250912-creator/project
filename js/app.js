@@ -156,7 +156,7 @@ async function handleRaiseTicket(auth, dataService) {
         const ticket = {
             id: generateId(),
             title, category, priority, location, description,
-            status: 'Open',
+            status: 'Not Assigned',
             createdBy: auth.getCurrentUser().id,
             createdAt: new Date().toISOString()
         };

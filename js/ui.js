@@ -188,7 +188,7 @@ export class UI {
             priority: formData.get('priority') || document.getElementById('ticketPriority')?.value,
             description: formData.get('description') || document.getElementById('ticketDescription')?.value,
             location: formData.get('location') || document.getElementById('ticketLocation')?.value,
-            status: 'open',
+            status: 'Not Assigned',
             createdAt: new Date().toISOString(),
             createdBy: this.auth.getCurrentUser().id
         };
