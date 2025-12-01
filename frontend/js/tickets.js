@@ -44,7 +44,7 @@ function handleTicketSubmit(e) {
         description: formData.get('description'),
         category: formData.get('category'),
         priority: formData.get('priority'),
-        status: 'Open',
+        status: 'Not Assigned',
         date: new Date().toISOString(),
         createdBy: 'Current User' // In a real app, this would be the logged-in user
     };
@@ -104,7 +104,7 @@ function renderTickets() {
 function updateDashboard() {
     if (!dashboardTickets) return;
     
-    const openTickets = tickets.filter(t => t.status === 'Open').length;
+    const openTickets = tickets.filter(t => t.status === 'Not Assigned').length;
     const inProgressTickets = tickets.filter(t => t.status === 'In Progress').length;
     const resolvedTickets = tickets.filter(t => t.status === 'Resolved').length;
     
@@ -121,7 +121,7 @@ function updateDashboard() {
             <div class="card bg-warning text-white mb-4">
                 <div class="card-body">
                     <h2>${openTickets}</h2>
-                    <p>Open</p>
+                    <p>Not Assigned</p>
                 </div>
             </div>
         </div>
@@ -148,7 +148,7 @@ function getPriorityBadgeClass(priority) {
 
 function getStatusBadgeClass(status) {
     const classes = {
-        'Open': 'primary',
+        'Not Assigned': 'primary',
         'In Progress': 'warning',
         'Resolved': 'success',
         'Closed': 'secondary'

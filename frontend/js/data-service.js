@@ -26,7 +26,7 @@ export class DataService {
                     title: 'Water leak in Bathroom',
                     description: 'Water dripping from ceiling in bathroom',
                     category: 'Plumbing',
-                    priority: 'Critical',
+                    priority: 'Emergency',
                     location: 'Bathroom Floor 2',
                     status: 'Completed',
                     createdBy: 'U1001',
