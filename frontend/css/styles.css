@@ -248,45 +248,7 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.1);
 }
 
-.role-selector {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.role-option {
-    position: relative;
-}
-
-.role-option input[type="radio"] {
-    display: none;
-}
-
-.role-option label {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 15px 10px;
-    border: 2px solid var(--border-light);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: var(--transition);
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.role-option label i {
-    font-size: 24px;
-    margin-bottom: 8px;
-    color: var(--primary);
-}
-
-.role-option input[type="radio"]:checked + label {
-    border-color: var(--primary);
-    background-color: rgba(67, 97, 238, 0.1);
-    color: var(--primary);
-}
+/* role selector removed from login form per updated UI */
 
 .demo-creds {
     border-left: 4px solid var(--info);
@@ -530,7 +492,7 @@ body {
     background: white;
     border-radius: 12px;
     box-shadow: var(--shadow-lg);
-    min-width: 300px;
+    min-width: 360px;
     z-index: 1000;
     margin-top: 8px;
 }
@@ -566,10 +528,13 @@ body {
 }
 
 .notification-list .notification-item {
-    padding: 15px 20px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border-light);
     cursor: pointer;
     transition: var(--transition);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
 }
 
 .notification-list .notification-item:hover {
@@ -580,6 +545,22 @@ body {
     display: block;
     color: var(--text-muted);
     margin-top: 5px;
+}
+
+.notification-item .notification-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--light);
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.notification-item .notification-content {
+    flex: 1 1 auto;
 }
 
 .profile-dropdown .dropdown-item {
@@ -594,6 +575,16 @@ body {
 .profile-dropdown .dropdown-item:hover {
     background-color: var(--light);
     padding-left: 25px;
+}
+
+/* Make profile dropdown match notification style */
+.profile-dropdown {
+    min-width: 300px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    margin-top: 8px;
 }
 
 /* ==================== MAIN CONTENT ==================== */
@@ -686,6 +677,21 @@ body {
     color: var(--text-muted);
     font-size: 12px;
     text-transform: uppercase;
+
+/* Make stat cards clickable/interactive */
+.stat-card { cursor: default; }
+.stat-card .stat-content h3 { cursor: pointer; }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
+
+/* Filter indicator used in tickets views */
+.filter-indicator .badge {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+.filter-indicator button#clear-filter-btn {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+}
     letter-spacing: 0.5px;
     margin-bottom: 5px;
 }
@@ -797,7 +803,7 @@ body {
     letter-spacing: 0.5px;
 }
 
-.badge-open {
+.badge-new {
     background-color: rgba(67, 97, 238, 0.1);
     color: var(--primary);
 }
@@ -1009,19 +1015,7 @@ body {
         font-size: 13px;
     }
 
-    .role-selector {
-        grid-template-columns: 1fr;
-    }
-
-    .role-option label {
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: 12px;
-    }
-
-    .role-option label i {
-        margin-bottom: 0;
-    }
+    /* role selector styles removed; login uses simplified form */
 }
 
 /* Mobile (480px) */

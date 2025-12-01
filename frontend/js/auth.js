@@ -18,14 +18,23 @@ export class Auth {
         }
     }
 
-    async login(username, password, role) {
+    async login(username, password, role = null) {
         return new Promise((resolve, reject) => {
             // Simulate API call with validation
             setTimeout(() => {
                 // For demo purposes, accept any non-empty credentials
                 if (username && password) {
-                    this.currentUser = this.createDemoUser(role);
-                    this.currentRole = role;
+                    // Infer role if not provided: use username keywords (admin/staff/student) or default to student
+                    let inferredRole = role;
+                    if (!inferredRole) {
+                        const uname = username.toLowerCase();
+                        if (uname.includes('admin')) inferredRole = 'admin';
+                        else if (uname.includes('staff')) inferredRole = 'staff';
+                        else if (uname.includes('student')) inferredRole = 'student';
+                        else inferredRole = 'student';
+                    }
+                    this.currentUser = this.createDemoUser(inferredRole);
+                    this.currentRole = inferredRole;
                     this.isLoggedIn = true;
                     this.saveToStorage();
                     this.updateUI();
@@ -170,23 +179,18 @@ export class Auth {
                 { path: 'dashboard', title: 'Dashboard', icon: 'tachometer-alt' },
                 { path: 'raise-ticket', title: 'Raise Ticket', icon: 'plus-circle' },
                 { path: 'my-tickets', title: 'My Tickets', icon: 'ticket-alt' },
-                { path: 'notifications', title: 'Notifications', icon: 'bell' },
-                { path: 'profile', title: 'Profile', icon: 'user' }
+                { path: 'notifications', title: 'Notifications', icon: 'bell' }
             ],
             staff: [
                 { path: 'dashboard', title: 'Dashboard', icon: 'tachometer-alt' },
                 { path: 'assigned-tickets', title: 'Assigned Tickets', icon: 'clipboard-list' },
-                { path: 'my-works', title: 'My Works', icon: 'tools' },
-                { path: 'notifications', title: 'Notifications', icon: 'bell' },
-                { path: 'profile', title: 'Profile', icon: 'user' }
+                { path: 'notifications', title: 'Notifications', icon: 'bell' }
             ],
             admin: [
                 { path: 'dashboard', title: 'Dashboard', icon: 'tachometer-alt' },
-                { path: 'all-tickets', title: 'All Tickets', icon: 'ticket-alt' },
-                { path: 'assign-tickets', title: 'tasks', icon: 'user-tag' },
+                { path: 'assign-tickets', title: 'Assign Tickets', icon: 'user-tag' },
                 { path: 'manage-staff', title: 'Manage Staff', icon: 'users-cog' },
-                { path: 'notifications', title: 'Notifications', icon: 'bell' },
-                { path: 'profile', title: 'Profile', icon: 'user' }
+                { path: 'notifications', title: 'Notifications', icon: 'bell' }
             ]
         };
         

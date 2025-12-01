@@ -41,10 +41,9 @@ function handleTicketSubmit(e) {
     const newTicket = {
         id: Date.now().toString(),
         title: formData.get('title'),
-        description: formData.get('description'),
         category: formData.get('category'),
         priority: formData.get('priority'),
-        status: 'Not Assigned',
+        status: 'Open',
         date: new Date().toISOString(),
         createdBy: 'Current User' // In a real app, this would be the logged-in user
     };
@@ -89,8 +88,7 @@ function renderTickets() {
                 <span class="badge bg-${getPriorityBadgeClass(ticket.priority)}">${ticket.priority}</span>
                 <span class="badge bg-${getStatusBadgeClass(ticket.status)}">${ticket.status}</span>
             </div>
-            <div class="ticket-body">
-                <p>${ticket.description}</p>
+                <div class="ticket-body">
                 <div class="ticket-meta">
                     <span><i class="fas fa-tag"></i> ${ticket.category}</span>
                     <span><i class="far fa-calendar"></i> ${formatDate(ticket.date)}</span>
@@ -104,7 +102,7 @@ function renderTickets() {
 function updateDashboard() {
     if (!dashboardTickets) return;
     
-    const openTickets = tickets.filter(t => t.status === 'Not Assigned').length;
+    const openTickets = tickets.filter(t => t.status === 'Open').length;
     const inProgressTickets = tickets.filter(t => t.status === 'In Progress').length;
     const resolvedTickets = tickets.filter(t => t.status === 'Resolved').length;
     
@@ -121,7 +119,7 @@ function updateDashboard() {
             <div class="card bg-warning text-white mb-4">
                 <div class="card-body">
                     <h2>${openTickets}</h2>
-                    <p>Not Assigned</p>
+                    <p>Open</p>
                 </div>
             </div>
         </div>
@@ -148,7 +146,7 @@ function getPriorityBadgeClass(priority) {
 
 function getStatusBadgeClass(status) {
     const classes = {
-        'Not Assigned': 'primary',
+        'Open': 'primary',
         'In Progress': 'warning',
         'Resolved': 'success',
         'Closed': 'secondary'

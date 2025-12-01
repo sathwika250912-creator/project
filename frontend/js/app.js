@@ -43,7 +43,7 @@ function initializeLoginForm(auth) {
         e.preventDefault();
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value;
-        const role = document.querySelector('input[name="role"]:checked').value;
+        // No role input in login form; determine role automatically in auth.login
 
         if (!username || !password) {
             showErrorToast('Please enter username and password');
@@ -57,7 +57,7 @@ function initializeLoginForm(auth) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
             
-            await auth.login(username, password, role);
+            await auth.login(username, password);
             showSuccessToast(`Welcome, ${auth.getCurrentUser().name}!`);
             
             setTimeout(() => showMainApp(auth), 500);
@@ -128,7 +128,12 @@ function setupTopbarEvents(auth, ui, router) {
     profileLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            ui.openEditProfileModal();
+            if (router) router.navigateTo('profile');
+            // Close dropdowns if open
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (profileDropdown) profileDropdown.style.display = 'none';
+            const notificationDropdown = document.getElementById('notification-dropdown');
+            if (notificationDropdown) notificationDropdown.style.display = 'none';
         });
     });
 
@@ -151,7 +156,12 @@ function setupSidebarEvents(router) {
                 if (href && href.startsWith('#')) {
                     const route = href.substring(1);
                     router.navigateTo(route);
+                    // Close sidebar and dropdowns to avoid overlapping UI
                     closeSidebar();
+                    const notificationDropdown = document.getElementById('notification-dropdown');
+                    const profileDropdown = document.getElementById('profile-dropdown');
+                    if (notificationDropdown) notificationDropdown.style.display = 'none';
+                    if (profileDropdown) profileDropdown.style.display = 'none';
                 }
             }
         });
@@ -180,9 +190,7 @@ async function handleRaiseTicket(auth, ui, dataService) {
     const category = document.getElementById('ticketCategory').value;
     const priority = document.getElementById('ticketPriority').value;
     const location = document.getElementById('ticketLocation').value.trim();
-    const description = document.getElementById('ticketDescription').value.trim();
-
-    if (!title || !category || !location || !description) {
+    if (!title || !category || !location) {
         ui.showErrorToast('Please fill all required fields');
         return;
     }
@@ -194,8 +202,8 @@ async function handleRaiseTicket(auth, ui, dataService) {
             category,
             priority,
             location,
-            description,
-            status: 'Open',
+            // description removed
+            status: 'New',
             createdBy: auth.getCurrentUser().id,
             createdAt: new Date().toISOString()
         };

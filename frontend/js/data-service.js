@@ -61,6 +61,14 @@ export class DataService {
             ];
             localStorage.setItem('users', JSON.stringify(sampleUsers));
         }
+
+        if (!localStorage.getItem('notifications')) {
+            const sampleNotifs = [
+                { id: 'N1', title: 'Ticket Update', message: 'Your ticket #TK001 has been updated', read: false, createdAt: new Date().toISOString() },
+                { id: 'N2', title: 'New Assignment', message: 'You have been assigned ticket #TK003', read: false, createdAt: new Date().toISOString() }
+            ];
+            localStorage.setItem('notifications', JSON.stringify(sampleNotifs));
+        }
     }
 
     // Ticket operations
@@ -145,7 +153,7 @@ export class DataService {
             total: tickets.length,
             completed: tickets.filter(t => t.status === 'Completed').length,
             inProgress: tickets.filter(t => t.status === 'In Progress').length,
-            pending: tickets.filter(t => t.status === 'Open' || t.status === 'Pending').length
+            pending: tickets.filter(t => t.status === 'New' || t.status === 'Pending').length
         };
     }
 
