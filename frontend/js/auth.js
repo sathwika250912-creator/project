@@ -3,47 +3,70 @@ export class Auth {
         this.currentUser = null;
         this.currentRole = null;
         this.isLoggedIn = false;
+        this.token = null;
+        this.apiUrl = 'http://localhost:5000'; // Backend URL
     }
 
     initialize() {
         // Check if user is logged in from localStorage
         const userData = localStorage.getItem('currentUser');
         const role = localStorage.getItem('currentRole');
+        const token = localStorage.getItem('authToken');
         
-        if (userData && role) {
+        if (userData && role && token) {
             this.currentUser = JSON.parse(userData);
             this.currentRole = role;
+            this.token = token;
             this.isLoggedIn = true;
             this.updateUI();
         }
     }
 
     async login(username, password, role = null) {
-        return new Promise((resolve, reject) => {
-            // Simulate API call with validation
-            setTimeout(() => {
-                // For demo purposes, accept any non-empty credentials
-                if (username && password) {
-                    // Infer role if not provided: use username keywords (admin/staff/student) or default to student
-                    let inferredRole = role;
-                    if (!inferredRole) {
-                        const uname = username.toLowerCase();
-                        if (uname.includes('admin')) inferredRole = 'admin';
-                        else if (uname.includes('staff')) inferredRole = 'staff';
-                        else if (uname.includes('student')) inferredRole = 'student';
-                        else inferredRole = 'student';
-                    }
-                    this.currentUser = this.createDemoUser(inferredRole);
-                    this.currentRole = inferredRole;
-                    this.isLoggedIn = true;
-                    this.saveToStorage();
-                    this.updateUI();
-                    resolve(this.currentUser);
-                } else {
-                    reject(new Error('Invalid credentials'));
+        try {
+            // Call backend JWT login endpoint
+                // Basic client-side validation to match server rules
+                const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                if (!emailRegex.test(username)) {
+                    throw new Error('Username must be a valid email address');
                 }
-            }, 1000);
-        });
+                const pwdRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+                if (!pwdRegex.test(password)) {
+                    throw new Error('Password must be at least 8 characters and include letters, numbers and symbols');
+                }
+
+                const response = await fetch(`${this.apiUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+            if (!response.ok) {
+                throw new Error('Login failed: Invalid credentials');
+            }
+
+            const data = await response.json();
+            this.token = data.token;
+
+            // Use user object returned from backend
+            if (data.user) {
+                this.currentUser = data.user;
+                this.currentRole = data.user.role;
+            } else {
+                // Fallback: infer role from username
+                const uname = username.toLowerCase();
+                this.currentRole = uname.includes('admin') ? 'admin' : (uname.includes('staff') ? 'staff' : 'student');
+                this.currentUser = this.createDemoUser(this.currentRole);
+            }
+
+            this.isLoggedIn = true;
+            this.saveToStorage();
+            this.updateUI();
+
+            return this.currentUser;
+        } catch (error) {
+            throw new Error(error.message || 'Login failed');
+        }
     }
 
     createDemoUser(role) {
@@ -87,11 +110,13 @@ export class Auth {
     }
 
     logout() {
-        // In a real app, this would also call the API to invalidate the session
+        // Clear all auth data from localStorage and memory
         localStorage.removeItem('currentUser');
         localStorage.removeItem('currentRole');
+        localStorage.removeItem('authToken');
         this.currentUser = null;
         this.currentRole = null;
+        this.token = null;
         this.isLoggedIn = false;
         
         // Redirect to login page
@@ -123,8 +148,38 @@ export class Auth {
         return this.currentRole;
     }
 
+    getToken() {
+        return this.token;
+    }
+
     isAuthenticated() {
-        return !!this.currentUser;
+        return !!this.currentUser && !!this.token;
+    }
+
+    // Helper to make authenticated API calls with JWT token
+    async apiCall(endpoint, options = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+
+        // Add Authorization header if token exists
+        if (this.token) {
+            headers['Authorization'] = `Bearer ${this.token}`;
+        }
+
+        const response = await fetch(`${this.apiUrl}${endpoint}`, {
+            ...options,
+            headers
+        });
+
+        if (response.status === 401) {
+            // Token expired or invalid - logout user
+            this.logout();
+            throw new Error('Session expired. Please login again.');
+        }
+
+        return response;
     }
 
     hasRole(role) {
@@ -137,6 +192,9 @@ export class Auth {
         }
         if (this.currentRole) {
             localStorage.setItem('currentRole', this.currentRole);
+        }
+        if (this.token) {
+            localStorage.setItem('authToken', this.token);
         }
     }
 

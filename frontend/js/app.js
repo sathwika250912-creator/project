@@ -38,8 +38,10 @@ function showLoginPage(auth) {
 function initializeLoginForm(auth) {
     const loginForm = document.getElementById('loginForm');
     if (!loginForm) return;
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.innerHTML : 'Login';
 
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.onsubmit = async (e) => {
         e.preventDefault();
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value;
@@ -50,24 +52,27 @@ function initializeLoginForm(auth) {
             return;
         }
 
-        const submitBtn = loginForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-
         try {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
-            
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+            }
+
             await auth.login(username, password);
             showSuccessToast(`Welcome, ${auth.getCurrentUser().name}!`);
-            
-            setTimeout(() => showMainApp(auth), 500);
+
+            // Ensure route points to dashboard and show main app
+            try { window.location.hash = '#dashboard'; } catch (e) {}
+            setTimeout(() => showMainApp(auth), 300);
         } catch (error) {
             showErrorToast(error.message || 'Login failed');
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
         }
-    });
+    };
 }
 
 function showMainApp(auth) {
@@ -112,7 +117,7 @@ function setupTopbarEvents(auth, ui, router) {
 
     const logoutButtons = [
         document.getElementById('logout-btn'),
-        document.getElementById('logout-link')
+        document.getElementById('topbar-logout-link')
     ];
     
     logoutButtons.forEach(btn => {
@@ -295,8 +300,18 @@ function closeAllDropdowns() {
 function handleLogout(auth) {
     if (confirm('Are you sure you want to logout?')) {
         auth.logout();
+        // Clear any routing state and show login page without a full reload
+        try {
+            window.location.hash = '';
+        } catch (e) {}
         showSuccessToast('Logged out successfully');
-        setTimeout(() => window.location.reload(), 500);
+        // Ensure login page is visible and main app hidden
+        try {
+            const loginPage = document.getElementById('login-page');
+            const mainWrapper = document.getElementById('main-wrapper');
+            if (loginPage) loginPage.style.display = 'flex';
+            if (mainWrapper) mainWrapper.style.display = 'none';
+        } catch (e) {}
     }
 }
 

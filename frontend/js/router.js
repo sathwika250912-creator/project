@@ -41,6 +41,16 @@ export class Router {
     }
 
     handleRouteChange() {
+        // If user is not authenticated, force showing login and prevent route rendering
+        if (!this.auth || !this.auth.isAuthenticated()) {
+            try {
+                const loginPage = document.getElementById('login-page');
+                const mainWrapper = document.getElementById('main-wrapper');
+                if (loginPage) loginPage.style.display = 'flex';
+                if (mainWrapper) mainWrapper.style.display = 'none';
+            } catch (e) {}
+            return;
+        }
         const hash = window.location.hash.replace('#', '') || 'dashboard';
         const role = this.auth.getCurrentRole();
         const roleRoutes = this.routes[role] || {};

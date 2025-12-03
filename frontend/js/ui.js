@@ -61,7 +61,8 @@ export class UI {
                 if (window.app && window.app.auth) {
                     if (confirm('Are you sure you want to logout?')) {
                         window.app.auth.logout();
-                        if (this.router) this.router.navigateTo('dashboard');
+                        // Clear route and ensure login page visible
+                        try { window.location.hash = ''; } catch (e) {}
                         this.showSuccessToast('Logged out successfully');
                     }
                 }
